@@ -1,10 +1,8 @@
 package com.digdes.school;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Where {
@@ -20,7 +18,7 @@ public class Where {
         this.andOr = 0;
         this.originalStr = str;
         this.data = data;
-        this.currentOper = "";
+        this.currentOper = null;
     }
 
     public int getAndOr() {
@@ -51,77 +49,111 @@ public class Where {
         }
     }
 
+    private void checkColumns(String key, String value) {
+        try {
+            Map<String, Function<String, Object>> types = new HashMap<>();
+
+            types.put("id", Long::parseLong);
+            types.put("lastname", String::toString);
+            types.put("cost", Double::parseDouble);
+            types.put("age", Long::parseLong);
+            System.out.println(Command.Columns.valueOf(key).name());
+            if (key.equalsIgnoreCase("active") && !value.equals("true") && !value.equals("false"))
+                    throw new Exception();
+                for (String nameKey: types.keySet()) {
+                    if (key.equalsIgnoreCase(nameKey)) {
+                        System.out.println("\n" + key + "--" + nameKey);
+                        types.get(nameKey).apply(value);
+                    }
+                }
+        }
+        catch (Exception e) {
+            System.out.println("Invalid comparison format");
+        }
+    }
+
     private void runEquals(String cond, List<Map<String, Object>> data) {
         String[] values = cond.replaceAll("[^а-яА-Я0-9A-Za-z_.,=]","").split(this.currentOper);
         System.out.println(Arrays.toString(values));
         Map<String, Object> Node = null;
-        for (int i = 0; i < this.data.size(); i++) {
-            Node = this.data.get(i).entrySet().stream().filter(x -> x.getKey().equals(values[0]) &&
-                            x.getValue().equals(values[1]))
+
+        checkColumns(values[0], values[1]);
+        for (int i = 0; i < data.size(); i++) {
+            Node = data.get(i).entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
+                            x.getValue().toString().equals(values[1]))
                     .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
             if (Node != null)
                 this.changeable.add(Node);
         }
     }
 
-    private void runNotEquals(String cond) {
+    private void runNotEquals(String cond, List<Map<String, Object>> data) {
         String[] values = cond.replaceAll("[^а-яА-Я0-9A-Za-z_.,=!]","").split(this.currentOper);
         System.out.println(Arrays.toString(values));
         Map<String, Object> Node = null;
-        for (int i = 0; i < this.data.size(); i++) {
-            Node = this.data.get(i).entrySet().stream().filter(x -> x.getKey().equals(values[0]) &&
-                            !(x.getValue().equals(values[1])))
+
+        checkColumns(values[0], values[1]);
+        for (int i = 0; i < data.size(); i++) {
+            Node = data.get(i).entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
+                            !(x.getValue().toString().equals(values[1])))
                     .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
             if (Node != null)
                 this.changeable.add(Node);
         }
     }
 
-    private void execLike(String cond, BiPredicate<String, String> exec, boolean isLower) {
+    private void execLike(String cond, BiPredicate<String, String> exec, boolean isLower,
+                          List<Map<String, Object>> data) {
         String[] values = cond.replaceAll("\\s", "").split(this.currentOper);
         System.out.println(Arrays.toString(values));
         Map<String, Object> Node = null;
 
         if (isLower)
-            for (int i = 0; i < this.data.size(); i++) {
-                Node = this.data.get(i).entrySet().stream().filter(x -> x.getKey().equals(values[0]) &&
+            for (int i = 0; i < data.size(); i++) {
+                Node = data.get(i).entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
                         exec.test(x.getValue().toString().toLowerCase(), values[1].replaceAll("%", "").toLowerCase()))
                         .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
                 if (Node != null)
                     this.changeable.add(Node);
             }
         else
-            for (int i = 0; i < this.data.size(); i++) {
-                Node = this.data.get(i).entrySet().stream().filter(x -> x.getKey().equals(values[0]) &&
-                                exec.test(x.getValue().toString(), values[1].replaceAll("%", "")))
+            for (int i = 0; i < data.size(); i++) {
+                Node = data.get(i).entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
+                        exec.test(x.getValue().toString(), values[1].replaceAll("%", "")))
                         .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
                 if (Node != null)
                     this.changeable.add(Node);
             }
     }
 
-    private void runLike(String cond) {
+    private void runLike(String cond, List<Map<String, Object>> data) {
         String[] values = cond.replaceAll("\\s", "").split(this.currentOper);
         boolean flag = false;
+        if (!values[0].equalsIgnoreCase("lastName"))
+            throw new NumberFormatException();
 
         if (this.currentOper.equals("ilike"))
             flag = true;
         if (values[1].startsWith("%") && values[1].endsWith("%"))
-            execLike(cond, String::contains, flag);
+            execLike(cond, String::contains, flag, data);
         else if (values[1].endsWith("%"))
-            execLike(cond, String::startsWith, flag);
+            execLike(cond, String::startsWith, flag, data);
         else if (values[1].startsWith("%"))
-            execLike(cond, String::endsWith, flag);
+            execLike(cond, String::endsWith, flag, data);
         else
-            execLike(cond, String::equals, flag);
+            execLike(cond, String::equals, flag, data);
     }
 
-    private void moreEqual(String cond) {
+    private void moreEqual(String cond, List<Map<String, Object>> data) {
         String[] values = cond.replaceAll("\\s", "").split(this.currentOper);
-        System.out.println(Arrays.toString(values));
         Map<String, Object> Node = null;
-        for (int i = 0; i < this.data.size(); i++) {
-            Node = this.data.get(i).entrySet().stream().filter(x -> x.getKey().equals(values[0]) &&
+
+        if (values[0].equalsIgnoreCase("lastName") || values[0].equalsIgnoreCase("active"))
+            throw new NumberFormatException();
+        System.out.println(Arrays.toString(values));
+        checkColumns(values[0], values[1]);
+        for (int i = 0; i < data.size(); i++) {
+            Node = data.get(i).entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
                             Integer.parseInt(x.getValue().toString()) >= Integer.parseInt(values[1]))
                     .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
             if (Node != null)
@@ -129,12 +161,15 @@ public class Where {
         }
     }
 
-    private void lessEqual(String cond) {
+    private void lessEqual(String cond, List<Map<String, Object>> data) {
         String[] values = cond.replaceAll("\\s", "").split(this.currentOper);
         System.out.println(Arrays.toString(values));
         Map<String, Object> Node = null;
-        for (int i = 0; i < this.data.size(); i++) {
-            Node = this.data.get(i).entrySet().stream().filter(x -> x.getKey().equals(values[0]) &&
+
+        if (values[0].equalsIgnoreCase("lastName") || values[0].equalsIgnoreCase("active"))
+            throw new NumberFormatException();
+        for (int i = 0; i < data.size(); i++) {
+            Node = data.get(i).entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
                             Integer.parseInt(x.getValue().toString()) <= Integer.parseInt(values[1]))
                     .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
             if (Node != null)
@@ -142,12 +177,15 @@ public class Where {
         }
     }
 
-    private void less(String cond) {
+    private void less(String cond, List<Map<String, Object>> data) {
         String[] values = cond.replaceAll("\\s", "").split(this.currentOper);
         System.out.println(Arrays.toString(values));
         Map<String, Object> Node = null;
-        for (int i = 0; i < this.data.size(); i++) {
-            Node = this.data.get(i).entrySet().stream().filter(x -> x.getKey().equals(values[0]) &&
+
+        if (values[0].equalsIgnoreCase("lastName") || values[0].equalsIgnoreCase("active"))
+            throw new NumberFormatException();
+        for (int i = 0; i < data.size(); i++) {
+            Node = data.get(i).entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
                             Integer.parseInt(x.getValue().toString()) < Integer.parseInt(values[1]))
                     .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
             if (Node != null)
@@ -155,12 +193,15 @@ public class Where {
         }
     }
 
-    private void more(String cond) {
+    private void more(String cond, List<Map<String, Object>> data) {
         String[] values = cond.replaceAll("\\s", "").split(this.currentOper);
         System.out.println(Arrays.toString(values));
         Map<String, Object> Node = null;
-        for (int i = 0; i < this.data.size(); i++) {
-            Node = this.data.get(i).entrySet().stream().filter(x -> x.getKey().equals(values[0]) &&
+
+        if (values[0].equalsIgnoreCase("lastName") || values[0].equalsIgnoreCase("active"))
+            throw new NumberFormatException();
+        for (int i = 0; i < data.size(); i++) {
+            Node = data.get(i).entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
                             Integer.parseInt(x.getValue().toString()) > Integer.parseInt(values[1]))
                     .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
             if (Node != null)
@@ -177,38 +218,56 @@ public class Where {
                 System.out.println("currentOper = " + this.currentOper);
                 break;
             }
-        if (!this.currentOper.equals("") || this.currentOper != null) {
-            switch (this.currentOper) {
-                case ">=":
-                    moreEqual(cond);
-                    break;
-                case "<":
-                    less(cond);
-                    break;
-                case ">":
-                    more(cond);
-                    break;
-                case "<=":
-                    lessEqual(cond);
-                    break;
-                case "=":
-                    runEquals(cond, data);
-                    break;
-                case "!=":
-                    runNotEquals(cond);
-                    break;
-                case "like", "ilike":
-                    runLike(cond);
-                    break;
+        if (this.currentOper != null) {
+            try {
+                switch (this.currentOper) {
+                    case ">=" -> moreEqual(cond, data);
+                    case "<" -> less(cond, data);
+                    case ">" -> more(cond, data);
+                    case "<=" -> lessEqual(cond, data);
+                    case "=" -> runEquals(cond, data);
+                    case "!=" -> runNotEquals(cond, data);
+                    case "like", "ilike" -> runLike(cond, data);
+                }
+            }
+            catch (NumberFormatException e) {
+                System.out.println("Invalid comparison format");
+                System.exit(1);
             }
         }
+    }
+
+    private Map<String, Object> areEqualKeyValues(Map<String, Object> first, Map<String, Object> second) {
+        return first.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey(),
+                        e -> e.getValue().equals(second.get(e.getKey()))));
+    }
+
+    private List<Map<String, Object>> changeableSetup() {
+        List<Map<String, Object>> newList = new ArrayList<>();
+
+        for (int i = 0; i < this.data.size(); i++) {
+            for (int j = 0; j < this.changeable.size(); j++) {
+                Map<String, Object> result = areEqualKeyValues(this.data.get(i), this.changeable.get(j));
+                if (result.containsValue(true))
+                    newList.add(this.data.get(i));
+            }
+        }
+        return newList;
     }
 
     private void execAnd() {
         switch (this.andOr) {
             case 1:
+                System.out.println("\nAND execute");
+                System.out.println("changeable: " + this.changeable);
                 executeOperator(this.conditions[0], this.data);
-                executeOperator(this.conditions[1], this.changeable);
+                List<Map<String, Object>> tmpChange = changeableSetup();
+                this.changeable.clear();
+//                this.changeable = new ArrayList<>();
+                System.out.println("tmpChange: " + tmpChange);
+                executeOperator(this.conditions[1], tmpChange);
+                System.out.println("changeable: " + this.changeable);
                 break;
             case 2:
                 for (String cond: this.conditions)

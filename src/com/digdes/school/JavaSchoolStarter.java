@@ -14,8 +14,7 @@ public class JavaSchoolStarter
 
     public int getCmdId() {return this.cmdId;}
 
-    private String setCmdId(String cmd)
-    {
+    private String setCmdId(String cmd) throws Exception {
         if (cmd.toLowerCase().startsWith("insert values "))
         {
             this.cmdId = 1;
@@ -37,9 +36,8 @@ public class JavaSchoolStarter
             return cmd.substring(7);
         }
         else
-            throw new WrongMethodTypeException();
+            throw new Exception("Invalid command name");
     }
-
 
     //На вход запрос, на выход результат выполнения запроса
     public List<Map<String,Object>> execute(String request) throws Exception
@@ -48,27 +46,25 @@ public class JavaSchoolStarter
             throw new EmptyStackException();
         this.cmd = request;
         this.cmd = setCmdId(this.cmd);
-        System.out.println("cmdId = " + this.cmdId);
         switch (getCmdId())
         {
-            case 1:
+            case 1 -> {
                 Insert ex = new Insert(this.cmd);
                 if (ex.row != null)
                     collection.add(ex.row);
-                break;
-            case 2:
+            }
+            case 2 -> {
                 Update update = new Update(this.cmd, collection);
-                System.out.println("indexWhere = " + update.indexWhere);
                 update.run();
-                break;
-            case 3:
+            }
+            case 3 -> {
                 Delete delete = new Delete(this.cmd, collection);
                 delete.run();
-                break;
-            case 4:
+            }
+            case 4 -> {
                 Select select = new Select(this.cmd, collection);
-                System.out.println(select.run().toString());
-                break;
+                System.out.println(select.run());
+            }
         }
         return collection;
     }

@@ -1,6 +1,8 @@
 package com.digdes.school;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public abstract class Command {
     int indexWhere;
@@ -11,7 +13,7 @@ public abstract class Command {
 
     public enum Columns {
         id,
-        lastName,
+        lastname,
         age,
         cost,
         active
@@ -28,15 +30,31 @@ public abstract class Command {
             this.indexWhere = cmd.toLowerCase().indexOf("where ");
     }
 
-    private void checkColumns(Map<String, Object> row)
+    private Boolean checkColumns(Map<String, Object> row)
     {
         try {
+            Map<String, Function<String, Object>> types = new HashMap<>();
+            types.put("id", Long::parseLong);
+            types.put("lastname", String::toString);
+            types.put("cost", Double::parseDouble);
+            types.put("age", Long::parseLong);
             for (String key: row.keySet())
-                System.out.println(Columns.valueOf(key).name());
+                System.out.println(Columns.valueOf(key.toLowerCase()).name());
+            for (String key: row.keySet()) {
+                if (key.equalsIgnoreCase("active") && !row.get(key).equals("true") && !row.get(key).equals("false"))
+                    throw new Exception();
+                for (String nameKey: types.keySet()) {
+                    if (key.equalsIgnoreCase(nameKey)) {
+                        System.out.println("\n" + key + "--" + nameKey);
+                        row.put(key, types.get(nameKey).apply(row.get(key).toString()));
+                    }
+                }
+            }
+            return true;
         }
-        catch (IllegalArgumentException e) {
-            System.out.println("Wrong column's name");
-            System.exit(1);
+        catch (Exception e) {
+            System.out.println("Wrong arguments");
+            return false;
         }
     }
 
@@ -46,6 +64,7 @@ public abstract class Command {
                 this.args = cmd.split(",");
                 String[] tmpstr;
                 Map<String, Object> tmpRow = new HashMap<>();
+
                 for (String item: this.args)
                 {
                     if (!item.equals("")) {
@@ -55,14 +74,13 @@ public abstract class Command {
                 }
                 System.out.println(tmpRow.keySet());
                 System.out.println(tmpRow.values());
-                checkColumns(tmpRow);
-                this.row = tmpRow;
+                if (checkColumns(tmpRow))
+                    this.row = tmpRow;
             }
         }
-        catch (ArrayIndexOutOfBoundsException e) {
+        catch (Exception e) {
             System.out.println("Wrong arguments");
         }
-
     }
 
     private void splitWhere(String cmd) {
