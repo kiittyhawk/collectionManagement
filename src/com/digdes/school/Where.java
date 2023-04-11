@@ -74,11 +74,11 @@ public class Where {
         Map<String, Object> Node = null;
 
         checkColumns(values[0], values[1]);
-        for (Map<String, Object> obj: this.data) {
+        for (Map<String, Object> obj: data) {
             Node = obj.entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
                             x.getValue().toString().equals(values[1]))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            if (Node != null)
+            if (Node != null && !this.changeable.contains(Node))
                 this.changeable.add(Node);
         }
     }
@@ -89,11 +89,11 @@ public class Where {
         Map<String, Object> Node = null;
 
         checkColumns(values[0], values[1]);
-        for (Map<String, Object> obj: this.data) {
+        for (Map<String, Object> obj: data) {
             Node = obj.entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
                             !(x.getValue().toString().equals(values[1])))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            if (Node != null)
+            if (Node != null && !this.changeable.contains(Node))
                 this.changeable.add(Node);
         }
     }
@@ -105,19 +105,19 @@ public class Where {
         Map<String, Object> Node = null;
 
         if (isLower)
-            for (Map<String, Object> obj: this.data) {
+            for (Map<String, Object> obj: data) {
                 Node = obj.entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
                         exec.test(x.getValue().toString().toLowerCase(), values[1].replaceAll("%", "").toLowerCase()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                if (Node != null)
+                if (Node != null && !this.changeable.contains(Node))
                     this.changeable.add(Node);
             }
         else
-            for (Map<String, Object> obj: this.data) {
+            for (Map<String, Object> obj: data) {
                 Node = obj.entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
                         exec.test(x.getValue().toString(), values[1].replaceAll("%", "")))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                if (Node != null)
+                if (Node != null && !this.changeable.contains(Node))
                     this.changeable.add(Node);
             }
     }
@@ -148,11 +148,11 @@ public class Where {
             throw new NumberFormatException();
 //        System.out.println(Arrays.toString(values));
         checkColumns(values[0], values[1]);
-        for (Map<String, Object> obj: this.data) {
+        for (Map<String, Object> obj: data) {
             Node = obj.entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
                             Integer.parseInt(x.getValue().toString()) >= Integer.parseInt(values[1]))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            if (Node != null)
+            if (Node != null && !this.changeable.contains(Node))
                 this.changeable.add(Node);
         }
     }
@@ -164,11 +164,11 @@ public class Where {
 
         if (values[0].equalsIgnoreCase("lastName") || values[0].equalsIgnoreCase("active"))
             throw new NumberFormatException();
-        for (Map<String, Object> obj: this.data) {
+        for (Map<String, Object> obj: data) {
             Node = obj.entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
                             Integer.parseInt(x.getValue().toString()) <= Integer.parseInt(values[1]))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            if (Node != null)
+            if (Node != null && !this.changeable.contains(Node))
                 this.changeable.add(Node);
         }
     }
@@ -180,11 +180,11 @@ public class Where {
 
         if (values[0].equalsIgnoreCase("lastName") || values[0].equalsIgnoreCase("active"))
             throw new NumberFormatException();
-        for (Map<String, Object> obj: this.data) {
+        for (Map<String, Object> obj: data) {
             Node = obj.entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
                             Integer.parseInt(x.getValue().toString()) < Integer.parseInt(values[1]))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            if (Node != null)
+            if (Node != null && !this.changeable.contains(Node))
                 this.changeable.add(Node);
         }
     }
@@ -196,17 +196,18 @@ public class Where {
 
         if (values[0].equalsIgnoreCase("lastName") || values[0].equalsIgnoreCase("active"))
             throw new NumberFormatException();
-        for (Map<String, Object> obj: this.data) {
+        for (Map<String, Object> obj: data) {
             Node = obj.entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
                             Integer.parseInt(x.getValue().toString()) > Integer.parseInt(values[1]))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            if (Node != null)
+            if (Node != null && !this.changeable.contains(Node))
                 this.changeable.add(Node);
         }
     }
 
     private void executeOperator(String cond, List<Map<String, Object>> data) {
         String[] operators = new String[] {"<=", ">=", "!=", "=", "ilike", "like", "<", ">" };
+//        System.out.println(data.toString());
 
         for (String oper: operators)
             if (cond.contains(oper)) {
@@ -239,10 +240,10 @@ public class Where {
                         e -> e.getValue().equals(second.get(e.getKey()))));
     }
 
-    private List<Map<String, Object>> changeableSetup() {
+    private List<Map<String, Object>> changeableSetup(List<Map<String, Object>> data) {
         List<Map<String, Object>> newList = new ArrayList<>();
 
-        for (Map<String, Object> obj: this.data) {
+        for (Map<String, Object> obj: data) {
             for (Map<String, Object> change: this.changeable) {
                 Map<String, Object> result = areEqualKeyValues(obj, change);
                 if (result.containsValue(true))
@@ -252,25 +253,46 @@ public class Where {
         return newList;
     }
 
+    private List<Map<String, Object>> removeRepeats(List<Map<String, Object>> data) {
+        List<Map<String, Object>> newData = new ArrayList<>();
+
+        for (Map<String, Object> obj: data)
+            if (!newData.contains(obj))
+                newData.add(obj);
+        return newData;
+    }
+
     private void execAnd() {
         switch (this.andOr) {
             case 1 -> {
 //                System.out.println("\nAND execute");
 //                System.out.println("changeable: " + this.changeable);
                 executeOperator(this.conditions[0], this.data);
-                List<Map<String, Object>> tmpChange = changeableSetup();
+//                System.out.println("changeable: " + this.changeable);
+                List<Map<String, Object>> tmpChange = changeableSetup(this.data);
                 this.changeable.clear();
 //                this.changeable = new ArrayList<>();
 //                System.out.println("tmpChange: " + tmpChange);
                 executeOperator(this.conditions[1], tmpChange);
 //                System.out.println("changeable: " + this.changeable);
+                this.changeable = changeableSetup(tmpChange);
+//                System.out.println("changeable: " + this.changeable);
+
             }
             case 2 -> {
-                for (String cond: this.conditions)
-                    executeOperator(cond, this.data);
+//                System.out.println("\nAND execute");
+                executeOperator(this.conditions[0], this.data);
+//                System.out.println("changeable: " + this.changeable);
+                List<Map<String, Object>> tmpChange = changeableSetup(this.data);
+//                System.out.println("tmpChange: " + tmpChange);
+                this.changeable.clear();
+                executeOperator(this.conditions[1], this.data);
+//                System.out.println("changeable: " + this.changeable);
+                tmpChange.addAll(changeableSetup(this.data));
+                this.changeable = removeRepeats(tmpChange);
+//                System.out.println("tmpChange: " + tmpChange);
             }
         }
-
     }
 
     public void setChangeable() {

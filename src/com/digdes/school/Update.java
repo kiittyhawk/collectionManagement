@@ -26,8 +26,8 @@ public class Update extends Command {
 
             for (Map<String, Object> obj: this.data)
                 for (Map<String, Object> change: where.getChangeable()) {
-                    Map<String, Object> result = areEqualKeyValues(obj, change);
-                    if (result.containsValue(true)) {
+//                    Map<String, Object> result = areEqualKeyValues(obj, change);
+                    if (obj.equals(change)) {
                         for (String key : this.row.keySet())
                             obj.put(key, this.row.get(key));
                     }

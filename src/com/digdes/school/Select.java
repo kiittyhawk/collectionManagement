@@ -16,11 +16,11 @@ public class Select extends Command {
         result = new ArrayList<>();
     }
 
-    private Map<String, Object> areEqualKeyValues(Map<String, Object> first, Map<String, Object> second) {
-        return first.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey,
-                        e -> e.getValue().equals(second.get(e.getKey()))));
-    }
+//    private Map<String, Object> areEqualKeyValues(Map<String, Object> first, Map<String, Object> second) {
+//        return first.entrySet().stream()
+//                .collect(Collectors.toMap(Map.Entry::getKey,
+//                        e -> e.getValue().equals(second.get(e.getKey()))));
+//    }
 
     public List<Map<String, Object>> run() {
         if (this.indexWhere != -1) {
@@ -29,8 +29,8 @@ public class Select extends Command {
 
             for (Map<String, Object> obj: this.data) {
                 for (Map<String, Object> change: where.getChangeable()) {
-                    Map<String, Object> result = areEqualKeyValues(obj, change);
-                    if (result.containsValue(true))
+//                    Map<String, Object> result = areEqualKeyValues(obj, change);
+                    if (obj.equals(change))
                         this.result.add(obj);
                 }
             }

@@ -12,11 +12,11 @@ public class Delete extends Command {
         this.data = data;
     }
 
-    private Map<String, Object> areEqualKeyValues(Map<String, Object> first, Map<String, Object> second) {
-        return first.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey,
-                        e -> e.getValue().equals(second.get(e.getKey()))));
-    }
+//    private Map<String, Object> areEqualKeyValues(Map<String, Object> first, Map<String, Object> second) {
+//        return first.entrySet().stream()
+//                .collect(Collectors.toMap(Map.Entry::getKey,
+//                        e -> e.getValue().equals(second.get(e.getKey()))));
+//    }
 
     public void run() {
         if (this.indexWhere != -1) {
@@ -24,9 +24,9 @@ public class Delete extends Command {
             where.setChangeable();
 
             for (Map<String, Object> obj: this.data) {
-                for (int j = 0; j < where.getChangeable().size(); j++) {
-                    Map<String, Object> result = areEqualKeyValues(obj, where.getChangeable().get(j));
-                    if (result.containsValue(true))
+                for (Map<String, Object> change: where.getChangeable()) {
+//                    Map<String, Object> result = areEqualKeyValues(obj, where.getChangeable().get(j));
+                    if (obj.equals(change))
                         obj.clear();
                 }
             }
