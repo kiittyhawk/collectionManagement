@@ -1,18 +1,17 @@
 package com.digdes.school;
 
-import java.lang.invoke.WrongMethodTypeException;
 import java.util.*;
 
 public class JavaSchoolStarter
 {
     private int cmdId;
     List<Map<String, Object>> collection = new ArrayList<>();
-    private String cmd;
 
-    //Дефолтный конструктор
     public JavaSchoolStarter(){ }
 
-    public int getCmdId() {return this.cmdId;}
+    public int getCmdId() {
+        return this.cmdId;
+    }
 
     private String setCmdId(String cmd) throws Exception {
         if (cmd.toLowerCase().startsWith("insert values "))
@@ -25,44 +24,42 @@ public class JavaSchoolStarter
             this.cmdId = 2;
             return cmd.substring(14);
         }
-        else if (cmd.toLowerCase().startsWith("delete "))
+        else if (cmd.toLowerCase().startsWith("delete"))
         {
             this.cmdId = 3;
-            return cmd.substring(7);
+            return cmd.substring(6);
         }
-        else if (cmd.toLowerCase().startsWith("select "))
+        else if (cmd.toLowerCase().startsWith("select"))
         {
             this.cmdId = 4;
-            return cmd.substring(7);
+            return cmd.substring(6);
         }
         else
             throw new Exception("Invalid command name");
     }
 
-    //На вход запрос, на выход результат выполнения запроса
     public List<Map<String,Object>> execute(String request) throws Exception
     {
         if (request.equals(""))
-            throw new EmptyStackException();
-        this.cmd = request;
-        this.cmd = setCmdId(this.cmd);
+            throw new Exception();
+        String cmd = setCmdId(request);
         switch (getCmdId())
         {
             case 1 -> {
-                Insert ex = new Insert(this.cmd);
+                Insert ex = new Insert(cmd);
                 if (ex.row != null)
                     collection.add(ex.row);
             }
             case 2 -> {
-                Update update = new Update(this.cmd, collection);
+                Update update = new Update(cmd, collection);
                 update.run();
             }
             case 3 -> {
-                Delete delete = new Delete(this.cmd, collection);
+                Delete delete = new Delete(cmd, collection);
                 delete.run();
             }
             case 4 -> {
-                Select select = new Select(this.cmd, collection);
+                Select select = new Select(cmd, collection);
                 System.out.println(select.run());
             }
         }

@@ -18,7 +18,7 @@ public class Select extends Command {
 
     private Map<String, Object> areEqualKeyValues(Map<String, Object> first, Map<String, Object> second) {
         return first.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey(),
+                .collect(Collectors.toMap(Map.Entry::getKey,
                         e -> e.getValue().equals(second.get(e.getKey()))));
     }
 
@@ -27,19 +27,16 @@ public class Select extends Command {
             Where where = new Where(this.where, this.data);
             where.setChangeable();
 
-            for (int i = 0; i < this.data.size(); i++) {
-                for (int j = 0; j < where.getChangeable().size(); j++) {
-                    Map<String, Object> result = areEqualKeyValues(this.data.get(i), where.getChangeable().get(j));
+            for (Map<String, Object> obj: this.data) {
+                for (Map<String, Object> change: where.getChangeable()) {
+                    Map<String, Object> result = areEqualKeyValues(obj, change);
                     if (result.containsValue(true))
-                        this.result.add(this.data.get(i));
+                        this.result.add(obj);
                 }
             }
         }
-        else {
-            for (int i = 0; i < this.data.size(); i++) {
-                this.result.add(this.data.get(i));
-            }
-        }
+        else
+            this.result.addAll(this.data);
         return this.result;
     }
 }

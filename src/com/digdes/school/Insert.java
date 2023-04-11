@@ -5,6 +5,4 @@ public class Insert extends Command {
         super(str);
         setArgs();
     }
-
-
 }

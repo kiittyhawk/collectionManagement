@@ -14,7 +14,7 @@ public class Delete extends Command {
 
     private Map<String, Object> areEqualKeyValues(Map<String, Object> first, Map<String, Object> second) {
         return first.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey(),
+                .collect(Collectors.toMap(Map.Entry::getKey,
                         e -> e.getValue().equals(second.get(e.getKey()))));
     }
 
@@ -23,11 +23,11 @@ public class Delete extends Command {
             Where where = new Where(this.where, this.data);
             where.setChangeable();
 
-            for (int i = 0; i < this.data.size(); i++) {
+            for (Map<String, Object> obj: this.data) {
                 for (int j = 0; j < where.getChangeable().size(); j++) {
-                    Map<String, Object> result = areEqualKeyValues(this.data.get(i), where.getChangeable().get(j));
+                    Map<String, Object> result = areEqualKeyValues(obj, where.getChangeable().get(j));
                     if (result.containsValue(true))
-                        this.data.get(i).clear();
+                        obj.clear();
                 }
             }
         }

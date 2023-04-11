@@ -21,7 +21,7 @@ public abstract class Command {
 
     public Command(String str) {
         this.str = str;
-        System.out.println("Исходная строка - " + this.str);
+//        System.out.println("Исходная строка - " + this.str);
         this.indexWhere = -1;
     }
 
@@ -34,18 +34,19 @@ public abstract class Command {
     {
         try {
             Map<String, Function<String, Object>> types = new HashMap<>();
+
             types.put("id", Long::parseLong);
             types.put("lastname", String::toString);
             types.put("cost", Double::parseDouble);
             types.put("age", Long::parseLong);
             for (String key: row.keySet())
-                System.out.println(Columns.valueOf(key.toLowerCase()).name());
+                Columns.valueOf(key.toLowerCase()).name();
             for (String key: row.keySet()) {
                 if (key.equalsIgnoreCase("active") && !row.get(key).equals("true") && !row.get(key).equals("false"))
                     throw new Exception();
                 for (String nameKey: types.keySet()) {
                     if (key.equalsIgnoreCase(nameKey)) {
-                        System.out.println("\n" + key + "--" + nameKey);
+//                        System.out.println("\n" + key + "--" + nameKey);
                         row.put(key, types.get(nameKey).apply(row.get(key).toString()));
                     }
                 }
@@ -72,8 +73,8 @@ public abstract class Command {
                         tmpRow.put(tmpstr[0], tmpstr[1]);
                     }
                 }
-                System.out.println(tmpRow.keySet());
-                System.out.println(tmpRow.values());
+//                System.out.println(tmpRow.keySet());
+//                System.out.println(tmpRow.values());
                 if (checkColumns(tmpRow))
                     this.row = tmpRow;
             }
@@ -90,25 +91,24 @@ public abstract class Command {
 
     public void setArgs() {
         setHasWhere(this.str);
-        System.out.println("Where index is " + this.indexWhere);
+//        System.out.println("Where index is " + this.indexWhere);
         String tmp;
-//        this.str = this.str.replaceAll("[^а-яА-Я0-9A-Za-z_.,=]","");
 
         if (this.indexWhere != -1) {
-            System.out.println("Where есть");
+//            System.out.println("Where есть");
             tmp = this.str.substring(0, this.indexWhere).replaceAll("[^а-яА-Я0-9A-Za-z_.,=]","");
-            System.out.println("Готовая строка - " + tmp);
-            System.out.println("Аргументы:");
+//            System.out.println("Готовая строка - " + tmp);
+//            System.out.println("Аргументы:");
             splitArgs(tmp);
             splitWhere(this.str);
-            System.out.println("Условие: " + this.where);
+//            System.out.println("Условие: " + this.where);
 
         }
         else {
-            System.out.println("Where нет");
+//            System.out.println("Where нет");
             tmp = this.str.replaceAll("[^а-яА-Я0-9A-Za-z_.,=]","");
-            System.out.println("Готовая строка - " + tmp);
-            System.out.println("Аргументы:");
+//            System.out.println("Готовая строка - " + tmp);
+//            System.out.println("Аргументы:");
             splitArgs(tmp);
         }
     }
