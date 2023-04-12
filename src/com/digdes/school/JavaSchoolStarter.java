@@ -73,23 +73,4 @@ public class JavaSchoolStarter
         }
         return removeEmpty(collection);
     }
-
-    public static void main (String[] args)
-    {
-        Scanner in = new Scanner(System.in);
-        String cmd = in.nextLine();
-        JavaSchoolStarter obj = new JavaSchoolStarter();
-        while (!cmd.equals("exit"))
-        {
-            try
-            {
-                List<Map<String, Object>> data = obj.execute(in.nextLine());
-                System.out.println("Готовая: " + data.toString());
-            }
-            catch (Exception e)
-            {
-                System.out.println(e);
-            }
-        }
-    }
 }

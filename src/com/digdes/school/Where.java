@@ -53,14 +53,11 @@ public class Where {
             types.put("lastname", String::toString);
             types.put("cost", Double::parseDouble);
             types.put("age", Long::parseLong);
-//            System.out.println(Command.Columns.valueOf(key).name());
             if (key.equalsIgnoreCase("active") && !value.equals("true") && !value.equals("false"))
                     throw new Exception();
-                for (String nameKey: types.keySet()) {
-                    if (key.equalsIgnoreCase(nameKey)) {
-//                        System.out.println("\n" + key + "--" + nameKey);
-                        types.get(nameKey).apply(value);
-                    }
+            for (String nameKey: types.keySet())
+                if (key.equalsIgnoreCase(nameKey)) {
+                    types.get(nameKey).apply(value);
                 }
         }
         catch (Exception e) {
@@ -70,7 +67,6 @@ public class Where {
 
     private void runEquals(String cond, List<Map<String, Object>> data) {
         String[] values = cond.replaceAll("[^а-яА-Я0-9A-Za-z_.,=]","").split(this.currentOper);
-//        System.out.println(Arrays.toString(values));
         Map<String, Object> Node = null;
 
         checkColumns(values[0], values[1]);
@@ -85,7 +81,6 @@ public class Where {
 
     private void runNotEquals(String cond, List<Map<String, Object>> data) {
         String[] values = cond.replaceAll("[^а-яА-Я0-9A-Za-z_.,=!]","").split(this.currentOper);
-//        System.out.println(Arrays.toString(values));
         Map<String, Object> Node = null;
 
         checkColumns(values[0], values[1]);
@@ -101,7 +96,6 @@ public class Where {
     private void execLike(String cond, BiPredicate<String, String> exec, boolean isLower,
                           List<Map<String, Object>> data) {
         String[] values = cond.replaceAll("[^а-яА-Я0-9A-Za-z_.,=!%]", "").split(this.currentOper);
-//        System.out.println(Arrays.toString(values));
         Map<String, Object> Node = null;
 
         if (isLower)
@@ -146,7 +140,6 @@ public class Where {
 
         if (values[0].equalsIgnoreCase("lastName") || values[0].equalsIgnoreCase("active"))
             throw new NumberFormatException();
-//        System.out.println(Arrays.toString(values));
         checkColumns(values[0], values[1]);
         for (Map<String, Object> obj: data) {
             Node = obj.entrySet().stream().filter(x -> x.getKey().equalsIgnoreCase(values[0]) &&
@@ -159,7 +152,6 @@ public class Where {
 
     private void lessEqual(String cond, List<Map<String, Object>> data) {
         String[] values = cond.replaceAll("[^а-яА-Я0-9A-Za-z_.,=!%><]", "").split(this.currentOper);
-//        System.out.println(Arrays.toString(values));
         Map<String, Object> Node = null;
 
         if (values[0].equalsIgnoreCase("lastName") || values[0].equalsIgnoreCase("active"))
@@ -175,7 +167,6 @@ public class Where {
 
     private void less(String cond, List<Map<String, Object>> data) {
         String[] values = cond.replaceAll("[^а-яА-Я0-9A-Za-z_.,=!%><]", "").split(this.currentOper);
-//        System.out.println(Arrays.toString(values));
         Map<String, Object> Node = null;
 
         if (values[0].equalsIgnoreCase("lastName") || values[0].equalsIgnoreCase("active"))
@@ -191,7 +182,6 @@ public class Where {
 
     private void more(String cond, List<Map<String, Object>> data) {
         String[] values = cond.replaceAll("[^а-яА-Я0-9A-Za-z_.,=!%><]", "").split(this.currentOper);
-//        System.out.println(Arrays.toString(values));
         Map<String, Object> Node = null;
 
         if (values[0].equalsIgnoreCase("lastName") || values[0].equalsIgnoreCase("active"))
@@ -207,12 +197,10 @@ public class Where {
 
     private void executeOperator(String cond, List<Map<String, Object>> data) {
         String[] operators = new String[] {"<=", ">=", "!=", "=", "ilike", "like", "<", ">" };
-//        System.out.println(data.toString());
 
         for (String oper: operators)
             if (cond.contains(oper)) {
                 this.currentOper = oper;
-//                System.out.println("currentOper = " + this.currentOper);
                 break;
             }
         if (this.currentOper != null) {
@@ -265,32 +253,20 @@ public class Where {
     private void execAnd() {
         switch (this.andOr) {
             case 1 -> {
-//                System.out.println("\nAND execute");
-//                System.out.println("changeable: " + this.changeable);
                 executeOperator(this.conditions[0], this.data);
-//                System.out.println("changeable: " + this.changeable);
                 List<Map<String, Object>> tmpChange = changeableSetup(this.data);
                 this.changeable.clear();
-//                this.changeable = new ArrayList<>();
-//                System.out.println("tmpChange: " + tmpChange);
                 executeOperator(this.conditions[1], tmpChange);
-//                System.out.println("changeable: " + this.changeable);
                 this.changeable = changeableSetup(tmpChange);
-//                System.out.println("changeable: " + this.changeable);
 
             }
             case 2 -> {
-//                System.out.println("\nAND execute");
                 executeOperator(this.conditions[0], this.data);
-//                System.out.println("changeable: " + this.changeable);
                 List<Map<String, Object>> tmpChange = changeableSetup(this.data);
-//                System.out.println("tmpChange: " + tmpChange);
                 this.changeable.clear();
                 executeOperator(this.conditions[1], this.data);
-//                System.out.println("changeable: " + this.changeable);
                 tmpChange.addAll(changeableSetup(this.data));
                 this.changeable = removeRepeats(tmpChange);
-//                System.out.println("tmpChange: " + tmpChange);
             }
         }
     }
@@ -298,19 +274,15 @@ public class Where {
     public void setChangeable() {
         if (this.originalStr != null) {
             setAndOr(this.originalStr);
-
             if (this.andOr != 0) {
                 setConditions(this.originalStr);
                 execAnd();
-//                System.out.println("Conditions = " + Arrays.toString(this.conditions));
             }
             else
             {
                 executeOperator(this.originalStr, this.data);
                 this.changeable = changeableSetup(this.data);
             }
-
         }
-//        System.out.println(this.changeable);
     }
 }
