@@ -13,11 +13,11 @@ public class Update extends Command {
         this.data = data;
     }
 
-    private Map<String, Object> areEqualKeyValues(Map<String, Object> first, Map<String, Object> second) {
-        return first.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey,
-                        e -> e.getValue().equals(second.get(e.getKey()))));
-    }
+//    private Map<String, Object> areEqualKeyValues(Map<String, Object> first, Map<String, Object> second) {
+//        return first.entrySet().stream()
+//                .collect(Collectors.toMap(Map.Entry::getKey,
+//                        e -> e.getValue().equals(second.get(e.getKey()))));
+//    }
 
     public void run() {
         if (this.indexWhere != -1) {

@@ -305,7 +305,11 @@ public class Where {
 //                System.out.println("Conditions = " + Arrays.toString(this.conditions));
             }
             else
+            {
                 executeOperator(this.originalStr, this.data);
+                this.changeable = changeableSetup(this.data);
+            }
+
         }
 //        System.out.println(this.changeable);
     }
