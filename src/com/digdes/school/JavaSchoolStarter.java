@@ -38,6 +38,14 @@ public class JavaSchoolStarter
             throw new Exception("Invalid command name");
     }
 
+    private List<Map<String, Object>> removeEmpty(List<Map<String, Object>> data) {
+        for (int i = 0; i < data.size(); i++) {
+            if (data.get(i).isEmpty())
+                data.remove(i);
+        }
+        return data;
+    }
+
     public List<Map<String,Object>> execute(String request) throws Exception
     {
         if (request.equals(""))
@@ -60,10 +68,10 @@ public class JavaSchoolStarter
             }
             case 4 -> {
                 Select select = new Select(cmd, collection);
-                System.out.println(select.run());
+                return select.run();
             }
         }
-        return collection;
+        return removeEmpty(collection);
     }
 
     public static void main (String[] args)
